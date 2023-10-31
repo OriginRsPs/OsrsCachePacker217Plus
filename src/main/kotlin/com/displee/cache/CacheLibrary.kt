@@ -25,7 +25,7 @@ open class CacheLibrary(val path: String, val clearDataAfterUpdate: Boolean = fa
 
     lateinit var mainFile: RandomAccessFile
 
-    private val indices: SortedMap<Int, Index> = TreeMap<Int, Index>()
+    private val indices: SortedMap<Int, Index> = TreeMap()
     var index255: Index255? = null
     private var rs3 = false
 
@@ -120,24 +120,36 @@ open class CacheLibrary(val path: String, val clearDataAfterUpdate: Boolean = fa
     }
 
     @JvmOverloads
-    fun createIndex(compressionType: CompressionType = CompressionType.GZIP, version: Int = 6, revision: Int = 0,
-                    named: Boolean = false, whirlpool: Boolean = false, flag4: Boolean = false, flag8: Boolean = false,
-                    writeReferenceTable: Boolean = true): Index {
-        val id = indices.size
+    fun createIndex(
+        id: Int,
+        compressionType: CompressionType = CompressionType.GZIP,
+        version: Int = 6,
+        revision: Int = 0,
+        named: Boolean = false,
+        whirlpool: Boolean = false,
+        flag4: Boolean = false,
+        flag8: Boolean = false,
+        writeReferenceTable: Boolean = true
+    ): Index {
         val raf = RandomAccessFile(File(path, "$CACHE_FILE_NAME.idx$id"), "rw")
         val index = (if (is317()) Index317(this, id, raf) else Index(this, id, raf)).also { indices[id] = it }
+
         if (!writeReferenceTable) {
             return index
         }
+
         index.version = version
         index.revision = revision
         index.compressionType = compressionType
+
         if (named) {
             index.flagMask(FLAG_NAME)
         }
+
         if (whirlpool) {
             index.flagMask(FLAG_WHIRLPOOL)
         }
+
         if (isRS3()) {
             if (flag4) {
                 index.flagMask(FLAG_4)
@@ -146,13 +158,15 @@ open class CacheLibrary(val path: String, val clearDataAfterUpdate: Boolean = fa
                 index.flagMask(FLAG_8)
             }
         }
+
         index.flag()
         check(index.update())
         return index
     }
 
-    fun createIndex(index: Index, writeReferenceTable: Boolean = true): Index {
-        return createIndex(index.compressionType, index.version, index.revision,
+
+    fun createIndex(index: Index, writeReferenceTable: Boolean = true): Index? {
+        return createIndex(index.id, index.compressionType, index.version, index.revision,
                 index.isNamed(), index.hasWhirlpool(), index.hasFlag4(), index.hasFlag8(), writeReferenceTable)
     }
 
@@ -311,7 +325,7 @@ open class CacheLibrary(val path: String, val clearDataAfterUpdate: Boolean = fa
             val newIndex = newLibrary.createIndex(index, writeReferenceTable)
             for (i in index.archiveIds()) { //only write referenced archives
                 val data = index.readArchiveSector(i)?.data ?: continue
-                newIndex.writeArchiveSector(i, data)
+                newIndex!!.writeArchiveSector(i, data)
             }
             if (archiveSector != null) {
                 newLibrary.index255?.writeArchiveSector(id, archiveSector.data)

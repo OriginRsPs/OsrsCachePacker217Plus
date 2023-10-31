@@ -16,18 +16,18 @@ repositories {
 
 
 dependencies {
-    implementation("io.github.microutils:kotlin-logging:1.12.5")
+    implementation("io.github.microutils:kotlin-logging:3.0.5")
     val slf4jVersion = "2.0.9"
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     runtimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
     implementation("me.tongfei:progressbar:0.9.2")
-    implementation("com.beust:klaxon:5.5")
-    implementation("com.google.code.gson:gson:2.8.9")
-    implementation("net.lingala.zip4j:zip4j:2.10.0")
+    implementation("com.beust:klaxon:5.6")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("net.lingala.zip4j:zip4j:2.11.4")
     implementation("commons-io:commons-io:2.11.0")
     implementation("com.displee:disio:2.2")
     implementation("com.github.jponge:lzma-java:1.3")
-    implementation("org.apache.ant:ant:1.10.11")
+    implementation("org.apache.ant:ant:1.10.13")
 
     for (module in listOf(
         "handler",
@@ -57,6 +57,13 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    register<JavaExec>("Update Cache") {
+        group = "Service"
+        description = "Update Cache to the defined revision"
+        classpath = project.sourceSets.main.get().runtimeClasspath
+        mainClass.set("com.mark.UpdateCacheKt")
     }
 }
 

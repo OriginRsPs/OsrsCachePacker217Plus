@@ -3,8 +3,9 @@ package com.mark
 import com.mark.tasks.CacheTask
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.Path
 
-val DEFAULT_PATH = Path.of("data", "cache").toFile()
+val DEFAULT_PATH: File = Path("data", "cache").toFile()
 
 class Builder(var type : TaskType) {
 

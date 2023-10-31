@@ -28,7 +28,7 @@ open class Index(origin: CacheLibrary, id: Int, val raf: RandomAccessFile) : Ref
     }
 
     protected open fun init() {
-        if (id < 0 || id >= 255) {
+        if (id < 0 || id == 16 || id >= 255) {
             return
         }
         val archiveSector = origin.index255?.readArchiveSector(id) ?: return
@@ -158,6 +158,10 @@ open class Index(origin: CacheLibrary, id: Int, val raf: RandomAccessFile) : Ref
                 var archiveSector: ArchiveSector? = readArchiveSector(id)
                 if (this.id != 255) {
                     archive = archive(id, null, true)
+                }
+                if (this.id == 16) {
+                    archive = null
+                    archiveSector = null
                 }
                 var overWrite = this.id == 255 && archiveSector != null || archive?.new == false
                 val sectorData = ByteArray(SECTOR_SIZE)
